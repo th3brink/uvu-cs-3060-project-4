@@ -1,3 +1,11 @@
+/* stdio for printf, fprintf, perror, fopen, feof and fgets */
+#include<stdio.h>
+/* stdlib for exit */
+#include<stdlib.h>
+/* Declare my buffer size constant */
+#define BUFFER_SIZE (100)
+
+
 //function for handling signals
      //invalid keystrokes are ignored and keystrokes are not echoed back
      //if ctrl-c is pressed the clean up program
@@ -39,9 +47,23 @@
  
 
 //main function
-     //program should use tcgetattrs to save the terminal attributes when it first starts. Before terminating it should use tcsetattrs to restore the original terminal             attributes.
+int main (int argc, char * argv[]) {
 
+	FILE * fp;
+	char buffer[BUFFER_SIZE];
 
+	if(argc <= 1) {
+        	//fprintf(stderr, "No file option provided\n");
+		// set stdin to stdout
+                
+        } else if (argc > 1) {
+		//run file input function
+	}
+
+     //program should use tcgetattrs to save the terminal attributes when it first starts. Before terminating it should use tcsetattrs to
+	// restore the original terminalattributes.
+	return 0;
+}
 
 //Notes
 	//To erase a character from the screen, display a backspace character (\b), a blank, and another backspace character.
