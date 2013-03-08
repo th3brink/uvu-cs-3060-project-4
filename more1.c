@@ -95,7 +95,8 @@ int main (int argc, char * argv[])
     // No file name passed in
     if(argc == 1)
     {
-        do_more(stdin);
+		sprintf("type \"quit\" to end input");
+        do_more_stdin(stdin);
     }
     // One file name is passed in
     else
@@ -121,6 +122,16 @@ int main (int argc, char * argv[])
 	response = get_responce(ASK, TRIES);
 	tty_mode(1);
 	return response;
+
+	set_cr_noecho_mode()
+	{
+		struct termios ttystate:
+		tcgetattr(0,&ttystate);
+		ttystate.c_lflag &= ~CANNON;
+		ttystate.c_lflag &= ~ECHO;
+//		ttystate.c_cc[VMIN] = 1;
+		tcsetaattr(0,TCSANOW, &ttystate);
+	}
 
     return 0;
 }
@@ -171,6 +182,60 @@ void do_more(FILE *fp)
             num_of_lines -= reply;
         }
         if(fputs(line, stdout) == EOF)
+        {
+            exit(1);
+        }
+        num_of_lines++;
+        linesDisplayed++;
+    }
+}
+
+// Prints each increment of lines
+void do_more_stdin(FILE *fp)
+{
+    // Stores each line
+    char line[LINELEN];
+    // Store infor to print in reverse video
+    char toPrint[50];
+    // Increment of lines printed
+    int num_of_lines = 0;
+    // Percent of page printed
+    int pagePercent;
+    int see_more(FILE *, char*), reply;
+    FILE *fp_tty;
+    
+    fp_tty = fopen("/dev/tty", "r");
+    if(fp_tty == NULL)
+    {
+        exit(1);
+    }
+    
+    while(fgets(line, LINELEN, fp))
+    {
+        if(num_of_lines == PAGELEN)
+        {
+            pagePercent = (linesDisplayed * 100) / numLines;
+            if(linesDisplayed == PAGELEN)
+            {
+                // Stores what to print in reverse video
+                // File Name and Percentage
+                sprintf(toPrint, "%s %%%d", fileName, pagePercent);
+                reply = see_more(fp_tty, toPrint);
+            }
+            if(linesDisplayed > PAGELEN)
+            {
+                // Stores what to print in reverse video
+                // Percentage
+                sprintf(toPrint, "%%%d", pagePercent);
+                reply = see_more(fp_tty, toPrint);
+            }
+            if(reply == 0)
+            {
+                break;
+            }
+            num_of_lines -= reply;
+        }
+        if(fputs(line, stdout) == "quit")
         {
             exit(1);
         }
