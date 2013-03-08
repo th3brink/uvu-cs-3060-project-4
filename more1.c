@@ -56,7 +56,10 @@ void find_num_of_lines(FILE *);
 // Paramaters: Takes int
 void deleteSpace(int);
 
-
+// ctrl_c_handler function
+// Description: provides ctrl+c to exit correctly
+// Return: None
+// Paramaters: Takes int
 void ctrl_c_handler (int);
 
 // Total number of lines
@@ -86,7 +89,7 @@ int main (int argc, char * argv[])
     // No file name passed in
     if(argc == 1)
     {
-        printf("Type ^c to quit");
+        printf("Type ^c to quit\n");
 		fp = stdin;
         do_more_stdin(fp);
     }
@@ -251,7 +254,7 @@ void deleteSpace(int n)
     }
 }
 
-
+// turns off echo
 set_cr_noecho_mode()
 {
 	struct termios ttystate;
@@ -261,7 +264,7 @@ set_cr_noecho_mode()
 	tcsetattr(0,TCSANOW, &ttystate);
 }
 
-
+//saves flags and resets falgs so that echo works when 0 is passed.
 tty_mode(int how) {
 	static struct termios original_mode;
 	static int original_flags;
