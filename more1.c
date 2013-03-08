@@ -56,7 +56,6 @@ void find_num_of_lines(FILE *);
 // Paramaters: Takes int
 void deleteSpace(int);
 
-//void tty_mode (int);
 
 void ctrl_c_handler (int);
 
@@ -71,35 +70,25 @@ char *fileName;
 //main function
 int main (int argc, char * argv[])
 {
-
-	
     FILE *fp;
-    //int fd_tty;
-    //FILE *fp_tty;
-    //fd_tty = open("/dev/tty", O_RDONLY);
-    //fp_tty = fdopen(fd_tty, "r");
-    
-	
-	int response;
-	//void ctrl_c_handler(int);
 	
 	tty_mode(0);
 	set_cr_noecho_mode();
-	//set_nodelay_made();
 	signal(SIGINT, ctrl_c_handler);
 	signal(SIGQUIT, SIG_IGN); 
-	//response = get_responce(ASK, TRIES);
     
     // More then 1 argument, so quit
     if(argc > 2)
     {
+        tty_mode(1);
         exit(1);
     }
     // No file name passed in
     if(argc == 1)
     {
-		printf("type \"quit\" to end input");
-        do_more_stdin(stdin);
+        printf("Type ^c to quit");
+		fp = stdin;
+        do_more_stdin(fp);
     }
     // One file name is passed in
     else
@@ -136,6 +125,7 @@ void do_more(FILE *fp)
     fp_tty = fopen("/dev/tty", "r");
     if(fp_tty == NULL)
     {
+        tty_mode(1);
         exit(1);
     }
     
@@ -166,6 +156,7 @@ void do_more(FILE *fp)
         }
         if(fputs(line, stdout) == EOF)
         {
+            tty_mode(1);
             exit(1);
         }
         num_of_lines++;
@@ -176,54 +167,32 @@ void do_more(FILE *fp)
 // Prints each increment of lines
 void do_more_stdin(FILE *fp)
 {
-    // Stores each line
-    char line[LINELEN];
-    // Store infor to print in reverse video
-    char toPrint[50];
-    // Increment of lines printed
-    int num_of_lines = 0;
-    // Percent of page printed
-    int pagePercent;
-    int see_more(FILE *, char*), reply;
-    FILE *fp_tty;
-    
-    fp_tty = fopen("/dev/tty", "r");
-    if(fp_tty == NULL)
+    char buffer[BUFFER_SIZE];
+    char *numByte;
+    int wordSize;
+    int toDelete;
+    int linesDone = 0;
+    /* Keep going until the end of file is reached */
+    while(!feof(fp))
     {
-        exit(1);
-    }
-    
-    while(fgets(line, LINELEN, fp))
-    {
-        if(num_of_lines == PAGELEN)
+        /* Get a line of text from the file. If there is no text, or
+         an error occured, then don't print anything */
+        if(fgets(buffer, BUFFER_SIZE, fp))
         {
-            pagePercent = (linesDisplayed * 100) / numLines;
-            if(linesDisplayed == PAGELEN)
+            if(linesDone > 0)
             {
-                // Stores what to print in reverse video
-                // File Name and Percentage
-                sprintf(toPrint, "%s %%%d", fileName, pagePercent);
-                reply = see_more(fp_tty, toPrint);
+                deleteSpace(toDelete + 3);
             }
-            if(linesDisplayed > PAGELEN)
-            {
-                // Stores what to print in reverse video
-                // Percentage
-                sprintf(toPrint, "%%%d", pagePercent);
-                reply = see_more(fp_tty, toPrint);
-            }
-            if(reply == 0)
-            {
-                break;
-            }
-            num_of_lines -= reply;
+            numByte = buffer;
+            wordSize = ((int)strlen(numByte) * sizeof(numByte) - 8) / 8;
+            printf("%s", buffer);
+            sprintf(buffer, "bytes %d", wordSize);
+            numByte = buffer;
+            printf("\033[7m %s \033[m", numByte);
+            toDelete = ((int)strlen(numByte) * sizeof(numByte) - 8) / 8;
+            memset(&buffer[0], 0, sizeof(buffer));
+            linesDone++;
         }
-        if(fputs(line, stdout) == "quit")
-        {
-            exit(1);
-        }
-        num_of_lines++;
-        linesDisplayed++;
     }
 }
 
@@ -289,7 +258,6 @@ set_cr_noecho_mode()
 	tcgetattr(0,&ttystate);
 	ttystate.c_lflag &= ~ICANON;
 	ttystate.c_lflag &= ~ECHO;
-//		ttystate.c_cc[VMIN] = 1;
 	tcsetattr(0,TCSANOW, &ttystate);
 }
 
