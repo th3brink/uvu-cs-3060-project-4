@@ -45,6 +45,10 @@ void find_num_of_lines(FILE *);
 // Paramaters: Takes int
 void deleteSpace(int);
 
+void tty_mode (int);
+
+void ctrl_c_handler (int);
+
 // Total number of lines
 int numLines;
 // Total number of lines displayed
@@ -70,38 +74,18 @@ void handleSignal () {
 }
      
 
-//function for printing lines(takes int that is the amount of lines)
- //int lines should either be 23 or 1
- //int fileExists should either be 0 or 1
-void printLines (int lines, int fileExists) {
-
-     //track the line position
-	
-     //if fileExists is 0 then	
-	  //print out 'Bytes' plus the number
-          //You can open the terminal device using either open, which returns a file descriptor, or fopen, which returns a file
-	  //pointer. File descriptors are declared as integers: int fd; whereas file pointers are declared like this: FILE *fp;
-     //else if fileExists is 1 then
-          //two % signs to create a % sign
-          //The prompt for the first screen will show the name of the file and the percentage that has been displayed:  myFile.txt 14%  
-          // After the first screen the prompt should show only the percentage that has been displayed.  28%  
-
-     //print amount of lines requested
-          //check for number of lines left and 
-          //if the line size is the same or less then what is left then print normally 
-          //else if the line size is more then what is left then just print the rest out.
-}     
- 
-
 //main function
 int main (int argc, char * argv[])
 {
+
+	
     FILE *fp;
     //int fd_tty;
     //FILE *fp_tty;
     //fd_tty = open("/dev/tty", O_RDONLY);
     //fp_tty = fdopen(fd_tty, "r");
     
+	
     
     // More then 1 argument, so quit
     if(argc > 2)
@@ -235,6 +219,29 @@ void deleteSpace(int n)
     {
         printf("\b \b");
     }
+}
+
+
+tty_mode (int how) {
+	static struct termics original_mode;
+	static int original_flags;
+	static int stored = 0;
+	
+	if (how == 0) {
+		tcgetattr(0, &orignal_mode);
+		original_flags = fcnt1(0, F_GETFL);
+		stored = 1;
+	
+	} else if (stored) { 
+		tcsetattr(0, TCSANOW, &original_mode);
+		fcnt1(0, F_SETFL, original_flags);
+	}
+}
+
+void ctrl_c_handler (int signum) {
+	tty_mode(1);
+	exit(1);
+
 }
 
 
